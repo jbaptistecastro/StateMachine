@@ -218,16 +218,6 @@ open class StateMachine {
         }
     }
     
-    // MARK: Getter
-    
-    func state(name: String) -> State? {
-        return states.first(where: {$0.name == name})
-    }
-    
-    func transition(name: String) -> Transition? {
-        return transitions.first(where: {$0.name == name})
-    }
-    
     // MARK: Configuration
     
     private func configure(transitions: [Transition]) {
@@ -262,18 +252,14 @@ open class StateMachine {
     
     // MARK: Helpers
     
-    func state() -> State {
-        var state = State("")
+    func isCurrent(state: State) -> Bool {
+        var isCurrent = false
         
         transitionQueue.sync {
-            state = currentState
+            isCurrent = (state == currentState)
         }
         
-        return state
-    }
-    
-    func isCurrent(state: State) -> Bool {
-        return state == currentState
+        return isCurrent
     }
     
     func canFire(transition: Transition) -> Bool {
@@ -294,6 +280,16 @@ open class StateMachine {
         return allowedTransition
     }
     
+    func state(name: String) -> State? {
+        var state: State?
+        
+        transitionQueue.sync {
+            state = states.first(where: {$0.name == name})
+        }
+        
+        return state
+    }
+    
     func allStates() -> [State] {
         var allStates = [State]()
         
@@ -302,6 +298,16 @@ open class StateMachine {
         }
         
         return allStates
+    }
+    
+    func transition(name: String) -> Transition? {
+        var transition: Transition?
+        
+        transitionQueue.sync {
+            transition = transitions.first(where: {$0.name == name})
+        }
+        
+        return transition
     }
     
     func allTransitions() -> [Transition] {

@@ -73,8 +73,7 @@ class StateMachineTests: XCTestCase {
         
         let expectedState = StateMachineMocks.stateB()
         
-        XCTAssertEqual(stateMachine.state(),
-                       expectedState)
+        XCTAssertTrue(stateMachine.isCurrent(state: expectedState))
     }
     
     func testUnknownTransition() {
@@ -155,5 +154,38 @@ class StateMachineTests: XCTestCase {
         
         try? stateMachine.fire(transition: transition,
                                userInfo: StateMachineMocks.userInfo())
+    }
+    
+    func testStateMachineLifecycle() {
+        let beforeTransitionExpectation = XCTestExpectation(description: "beforeTransitionExpectation")
+        let leaveStateExpectation = XCTestExpectation(description: "leaveStateExpectation")
+        let onStateExpectation = XCTestExpectation(description: "onStateExpectation")
+        let onTransitionExpectation = XCTestExpectation(description: "onTransitionExpectation")
+        
+        let transitions = StateMachineMocks.transitions()
+        let stateMachine = StateMachine(initialState: StateMachineMocks.stateA(),
+                                        transitions: transitions)
+        let transition = StateMachineMocks.transitionA()
+        
+        stateMachine.on(.beforeTransition(transition)) { (_) in
+            beforeTransitionExpectation.fulfill()
+        }
+        
+        stateMachine.on(.leaveState(StateMachineMocks.stateA())) { (_) in
+            leaveStateExpectation.fulfill()
+        }
+        
+        stateMachine.on(.onState(StateMachineMocks.stateB())) { (_) in
+            onStateExpectation.fulfill()
+        }
+        
+        stateMachine.on(.onTransition(transition)) { (_) in
+            onTransitionExpectation.fulfill()
+        }
+        
+        try? stateMachine.fire(transition: transition,
+                               userInfo: nil)
+        
+        wait(for: [beforeTransitionExpectation, leaveStateExpectation, onStateExpectation, onTransitionExpectation], timeout: 1, enforceOrder: true)
     }
 }
