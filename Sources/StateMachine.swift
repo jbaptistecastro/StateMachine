@@ -19,19 +19,19 @@ open class State: Hashable {
     
     /* Properties */
     
-    let name: String
+    public let name: String
     
     /* Initialization */
     
-    init(_ name: String) {
+    public init(_ name: String) {
         self.name = name
     }
 }
 
 extension State: Equatable {
     
-    static open func ==(lhs: State,
-                        rhs: State) -> Bool {
+    static open func == (lhs: State,
+                         rhs: State) -> Bool {
         
         return lhs.name == rhs.name
     }
@@ -49,15 +49,15 @@ open class Transition: Hashable {
     
     /* Properties */
     
-    let name: String
-    let from: State
-    let to: State
+    public let name: String
+    public let from: State
+    public let to: State
     
     /* Initialization */
     
-    init(_ name: String,
-         from: State,
-         to: State) {
+    public init(_ name: String,
+                from: State,
+                to: State) {
         
         self.name = name
         self.from = from
@@ -67,16 +67,16 @@ open class Transition: Hashable {
 
 extension Transition: Equatable {
     
-    static open func ==(lhs: Transition,
-                        rhs: Transition) -> Bool {
+    static open func == (lhs: Transition,
+                         rhs: Transition) -> Bool {
         
         return lhs.name == rhs.name && lhs.from == rhs.from && lhs.to == rhs.to
     }
 }
 
-// MARK: Lifecycle
+// MARK: LifecycleEvent
 
-enum Lifecycle {
+public enum LifecycleEvent {
     
     /* State */
     
@@ -89,28 +89,32 @@ enum Lifecycle {
     case onTransition(_: Transition)
 }
 
-extension Lifecycle: Hashable {
+extension LifecycleEvent: Hashable {
     
     public var hashValue: Int {
         switch self {
-        case .beforeTransition(let value): return "bt\(value.hashValue)".hashValue
-        case .leaveState(let value): return "ls\(value.hashValue)".hashValue
-        case .onState(let value): return "os\(value.hashValue)".hashValue
-        case .onTransition(let value): return "ot\(value.hashValue)".hashValue
+        case .beforeTransition(let value):
+            return "bt\(value.hashValue)".hashValue
+        case .leaveState(let value):
+            return "ls\(value.hashValue)".hashValue
+        case .onState(let value):
+            return "os\(value.hashValue)".hashValue
+        case .onTransition(let value):
+            return "ot\(value.hashValue)".hashValue
         }
     }
 }
 
-extension Lifecycle: Equatable {
+extension LifecycleEvent: Equatable {
     
-    public static func ==(lhs: Lifecycle, rhs: Lifecycle) -> Bool {
+    public static func == (lhs: LifecycleEvent, rhs: LifecycleEvent) -> Bool {
         return lhs.hashValue == rhs.hashValue
     }
 }
 
 // MARK: Error
 
-enum TransitionError: Error {
+public enum TransitionError: Error {
     
     case unknown
     case notAllowed
@@ -121,7 +125,7 @@ enum TransitionError: Error {
 private struct Context {
     
     let queue: DispatchQueue
-    var block: ([AnyHashable : Any]?) -> Void
+    var block: ([AnyHashable: Any]?) -> Void
 }
 
 // MARK: State Machine
@@ -141,12 +145,12 @@ open class StateMachine {
     private lazy var states: [State] = [State]()
     private lazy var transitions: [Transition] = [Transition]()
     private lazy var map: [State: [Transition]] = [State: [Transition]]()
-    private lazy var contexts: [Lifecycle: Context] = [Lifecycle: Context]()
+    private lazy var contexts: [LifecycleEvent: Context] = [LifecycleEvent: Context]()
     
     // MARK: Initialization
     
-    required public init(initialState: State,
-                         transitions: [Transition]) {
+    public init(initialState: State,
+                transitions: [Transition]) {
         
         self.currentState = initialState
         
@@ -155,8 +159,8 @@ open class StateMachine {
     
     // MARK: Transition
     
-    func fire(transition: Transition,
-              userInfo: [AnyHashable : Any]?) throws {
+    public func fire(transition: Transition,
+                     userInfo: [AnyHashable: Any]?) throws {
         
         if !transitions.contains(transition) {
             throw TransitionError.unknown
@@ -175,13 +179,13 @@ open class StateMachine {
     
     // MARK: Observer
     
-    func on(_ lifecycle: Lifecycle,
-            queue: DispatchQueue = DispatchQueue.main,
-            using block: @escaping([AnyHashable : Any]?) -> Void) {
+    public func on(_ event: LifecycleEvent,
+                   queue: DispatchQueue = DispatchQueue.main,
+                   using block: @escaping([AnyHashable: Any]?) -> Void) {
         
         let context = Context(queue: queue,
                               block: block)
-        contexts[lifecycle] = context
+        contexts[event] = context
     }
     
     // MARK: Lifecycle
@@ -201,7 +205,7 @@ open class StateMachine {
     }
     
     private func execute(_ transition: Transition,
-                         userInfo: [AnyHashable : Any]?) {
+                         userInfo: [AnyHashable: Any]?) {
         
         currentState = transition.to
         
@@ -238,21 +242,25 @@ open class StateMachine {
     }
     
     private func add(state: State) {
-        guard map[state] == nil else { return }
+        guard map[state] == nil else {
+            return
+        }
         
         states.append(state)
         map[state] = [Transition]()
     }
     
     private func add(transition: Transition) {
-        guard !transitions.contains(transition) else { return }
+        guard !transitions.contains(transition) else {
+            return
+        }
         
         transitions.append(transition)
     }
     
     // MARK: Helpers
     
-    func isCurrent(state: State) -> Bool {
+    public func isCurrent(state: State) -> Bool {
         var isCurrent = false
         
         transitionQueue.sync {
@@ -262,15 +270,17 @@ open class StateMachine {
         return isCurrent
     }
     
-    func canFire(transition: Transition) -> Bool {
+    public func canFire(transition: Transition) -> Bool {
         guard let allowedTransition = allowedTransitions() else {
             return false
         }
         
-        return !(allowedTransition.filter({$0 == transition}).isEmpty)
+        return !(allowedTransition.filter({
+            $0 == transition
+        }).isEmpty)
     }
     
-    func allowedTransitions() -> [Transition]? {
+    public func allowedTransitions() -> [Transition]? {
         var allowedTransition: [Transition]?
         
         transitionQueue.sync {
@@ -280,17 +290,19 @@ open class StateMachine {
         return allowedTransition
     }
     
-    func state(name: String) -> State? {
+    public func state(name: String) -> State? {
         var state: State?
         
         transitionQueue.sync {
-            state = states.first(where: {$0.name == name})
+            state = states.first(where: {
+                $0.name == name
+            })
         }
         
         return state
     }
     
-    func allStates() -> [State] {
+    public func allStates() -> [State] {
         var allStates = [State]()
         
         transitionQueue.sync {
@@ -300,17 +312,19 @@ open class StateMachine {
         return allStates
     }
     
-    func transition(name: String) -> Transition? {
+    public func transition(name: String) -> Transition? {
         var transition: Transition?
         
         transitionQueue.sync {
-            transition = transitions.first(where: {$0.name == name})
+            transition = transitions.first(where: {
+                $0.name == name
+            })
         }
         
         return transition
     }
     
-    func allTransitions() -> [Transition] {
+    public func allTransitions() -> [Transition] {
         var allTransitions = [Transition]()
         
         transitionQueue.sync {

@@ -5,13 +5,13 @@
  *  MIT license - see LICENSE.md
  */
 
+import StateMachine
 import XCTest
-@testable import StateMachineSample
 
 // MARK: Mocks
 
 private struct StateMachineMocks {
-    
+
     struct Constants {
         
         static let stateA = "stateA"
@@ -20,7 +20,7 @@ private struct StateMachineMocks {
         static let transitionA = "transitionA"
         static let transitionB = "transitionB"
     }
-    
+
     static func stateA() -> State {
         return State(Constants.stateA)
     }
@@ -145,7 +145,7 @@ class StateMachineTests: XCTestCase {
         
         stateMachine.on(.onTransition(StateMachineMocks.transitionB())) { (userInfo) in
             guard let userInfo = userInfo else {
-                XCTFail()
+                XCTFail("User Info must exists")
                 return
             }
             
@@ -186,6 +186,10 @@ class StateMachineTests: XCTestCase {
         try? stateMachine.fire(transition: transition,
                                userInfo: nil)
         
-        wait(for: [beforeTransitionExpectation, leaveStateExpectation, onStateExpectation, onTransitionExpectation], timeout: 1, enforceOrder: true)
+        let expectations = [beforeTransitionExpectation, leaveStateExpectation, onStateExpectation, onTransitionExpectation]
+        
+        wait(for: expectations,
+             timeout: 1,
+             enforceOrder: true)
     }
 }
