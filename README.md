@@ -6,7 +6,7 @@ A state machine implemented in Swift.
 ### CocoaPods
 
 ```ruby
-  pod 'StateMachine', '~> 1.0.0'
+  pod 'JCStateMachine', '~> 1.0.0'
 ```
 
 ### Carthage

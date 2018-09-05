@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name         = "StateMachine"
+  s.name         = "JCStateMachine"
   s.version      = "1.0.0"
   s.summary      = "A thread safe state machine implemented in pure Swift"
   s.homepage     = "https://github.com/jbaptistecastro/StateMachine"
