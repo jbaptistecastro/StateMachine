@@ -1,3 +1,8 @@
+![Build Status](https://api.travis-ci.org/jbaptistecastro/StateMachine.svg?branch=master) &nbsp;
+![CocoaPod platform](https://cocoapod-badges.herokuapp.com/p/JCStateMachine/badge.png) &nbsp;
+![CocoaPod version](https://cocoapod-badges.herokuapp.com/v/JCStateMachine/badge.png) &nbsp;
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
 # StateMachine
 A state machine implemented in Swift.
 
