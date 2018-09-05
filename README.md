@@ -12,7 +12,7 @@ A state machine implemented in Swift.
 ### Carthage
 
 ```ruby
-  carthage 'jbaptistecastro/Transporter' "1.0.0"
+  carthage 'jbaptistecastro/StateMachine' "1.0.0"
 ```
 
 ## Classes
